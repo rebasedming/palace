@@ -55,28 +55,25 @@ function App() {
   }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
 
   return (
-    <div>
-      HELLO WORLD
-      <Loop>
-        <Stage width={800} height={600}>
-          <World>
-            <Body args={[0, 0, 75, 75]} ref={(b) => {}}>
-              <Sprite
-                repeat={false}
-                src={Map}
-                scale={1}
-                state={0}
-                steps={[0]}
-                tileWidth={64}
-                tileHeight={64}
-                x={spritePosition.x}
-                y={spritePosition.y}
-              />{" "}
-            </Body>
-          </World>
-        </Stage>
-      </Loop>
-    </div>
+    <Loop>
+      <Stage width={800} height={600}>
+        <World>
+          <Body args={[0, 0, 75, 75]} ref={(b) => {}}>
+            <Sprite
+              repeat={false}
+              src={Map}
+              scale={1}
+              state={0}
+              steps={[0]}
+              tileWidth={64}
+              tileHeight={64}
+              x={spritePosition.x}
+              y={spritePosition.y}
+            />{" "}
+          </Body>
+        </World>
+      </Stage>
+    </Loop>
   );
 }
 
