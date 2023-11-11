@@ -118,6 +118,13 @@ const Stage = () => {
     map = setCollisionRegion(map, 56, 50, 17, 14);
 
     map = setCollisionRegion(map, 52, 20, 16, 12);
+    map = setCollisionRegion(map, 40, 44, 4, 4);
+    map = setCollisionRegion(map, 20, 56, 16, 16);
+    map = setCollisionRegion(map, 24, 20, 20, 12);
+    map = setCollisionRegion(map, 12, 28, 4, 4);
+
+    map = setCollisionRegion(map, 5, 57, 10, 10);
+    map = setCollisionRegion(map, 24, 32, 4, 4);
     return map;
   }, []);
 
@@ -167,8 +174,8 @@ const Stage = () => {
         <TileMap map={map} />
       </div>
 
-      {/* <Grid map={map} /> */}
-      {/* <PixStage spritePosition={spritePosition} /> */}
+      <Grid map={map} />
+      <PixStage spritePosition={spritePosition} />
     </div>
   );
 };
