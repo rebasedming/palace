@@ -22,6 +22,10 @@
 
     /* Types */
     "typeRoots": ["@types/"],
+    "baseUrl": "./src",
+    "paths": {
+      "@assets/*": ["assets/*"]
+    }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
