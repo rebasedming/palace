@@ -1,5 +1,5 @@
 import { Stage as PixiStage, Container, Sprite } from "@pixi/react";
-import React, { useState, useEffect, useRef, useMemo, memo } from "react";
+import { useState, useEffect, useRef, useMemo, memo } from "react";
 import * as PIXI from "pixi.js";
 import className from "classnames";
 import fallarbor from "../assets/maps/fallarbor.png";
@@ -193,4 +193,4 @@ const PixStage = memo(
   }
 );
 
-export { Stage };
+export default Stage;
