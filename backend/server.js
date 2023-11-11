@@ -1,5 +1,6 @@
 const http = require('http');
 const url = require("url")
+const fs = require("fs")
 const { JSDOM } = require('jsdom');
 const { Readability } = require('@mozilla/readability')
 const OpenAI = require("openai")
@@ -21,18 +22,23 @@ server.on('request', async (req, res) => {
     const parameter = pathname.slice(1)
     if (parameter && parameter != "favicon.ico") {
         try {
-            const bodyText = await summarizeFromText(await getArticleText(parameter))
-            const paragraphs = bodyText.split("\n")
-            let urls = []
-            for (idx in paragraphs) {
-                console.log(paragraphs[idx])
-                const img = await (generateImageFromSummary(paragraphs[idx]))
-                console.log(img)
-                urls.push(img)
+            const bodyText = await summarizeFromText(await getArticleText(parameter));
+            const paragraphs = bodyText.split("\n");
+            let data = [];
+
+            for (let idx in paragraphs) {
+                console.log(paragraphs[idx]);
+                const { url, mnemonic } = await generateImageFromSummary(paragraphs[idx]);
+                console.log(url);
+                data.push({ url, mnemonic, fact: paragraphs[idx] });
             }
+
+            // Write to JSON file
+            fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
+
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ urls, paragraphs }));
+            res.end(JSON.stringify({ data }));
         } catch (error) {
             res.statusCode = 500;
             res.setHeader('Content-Type', 'text/plain');
@@ -52,14 +58,20 @@ server.listen(port, hostname, () => {
 
 async function generateImageFromPrompt(prompt) {
     console.log("generating image")
-    const response = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: prompt,
-        n: 1,
-        size: "1024x1024",
-    });
-    const url = response.data[0].url
-    return url
+    try {
+
+        const response = await openai.images.generate({
+            model: "dall-e-3",
+            prompt: prompt,
+            n: 1,
+            size: "1024x1024",
+        });
+        const url = response.data[0].url
+        return url
+    }
+    catch (error) {
+        console.error(error)
+    }
 }
 
 async function getArticleText(url) {
@@ -76,7 +88,7 @@ async function getArticleText(url) {
 
 async function summarizeFromText(text) {
     const completion = await openai.chat.completions.create({
-        messages: [{ "role": "system", "content": "You are a helpful assistant looks at text pulled from a article from a website and summarizes the content into key point facts organized by date. Do not summarize anything regarding the medium of the article itself. Only summarize the content of the article text. Split each fact with \n\n"},
+        messages: [{ "role": "system", "content": "You are a helpful assistant looks at text pulled from a article from a website and summarizes the content into key point facts organized by date. Do not summarize anything regarding the medium of the article itself. Only summarize the content of the article text. Split each fact with \n" },
         { "role": "user", "content": `This is the text ${text}` }],
         model: "gpt-4-1106-preview",
     });
@@ -92,8 +104,13 @@ async function generateImageFromSummary(text) {
         { "role": "user", "content": text }],
         model: "gpt-4-1106-preview",
     });
-    const result = completion.choices[0].message.content
-    console.log(result)
+    const mnemonic = completion.choices[0].message.content;
+    try {
 
-    return await generateImageFromPrompt(result)
+        const url = await generateImageFromPrompt(mnemonic);
+        return { url, mnemonic, fact: text };
+    }
+    catch (error) {
+        console.error(error)
+    }
 }
