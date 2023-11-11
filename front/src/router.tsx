@@ -20,6 +20,7 @@ const Router = () => {
             height: 80,
             width: 80,
           }}
+          onGoBack={() => setPage(Page.Launcher)}
         />
       </div>
     );

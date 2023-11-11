@@ -40,8 +40,6 @@ const setCollisionRegion = (
   return map;
 };
 
-const tileSize = 10;
-
 const Tile = memo(
   ({
     tile,
@@ -55,8 +53,8 @@ const Tile = memo(
     return (
       <div
         style={{
-          width: tileSize,
-          height: tileSize,
+          width: TILESIZE,
+          height: TILESIZE,
           backgroundColor: tile === 1 ? "red" : "green",
           opacity: DEBUG ? 1 : 0,
         }}
@@ -70,12 +68,11 @@ const Tile = memo(
 );
 
 const TileMap = memo(({ map }: { map: number[][] }) => {
-  console.log("rendering tilemap");
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: `repeat(${map[0].length}, ${tileSize}px)`,
+        gridTemplateColumns: `repeat(${map[0].length}, ${TILESIZE}px)`,
       }}
     >
       <img
@@ -105,14 +102,74 @@ const TileMap = memo(({ map }: { map: number[][] }) => {
   );
 });
 
+const Grid = memo(({ map }: { map: number[][] }) => {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${map[0].length}, 1px)`,
+      }}
+    >
+      {map.flatMap((row, rowIndex) =>
+        row.map((tile, colIndex) => (
+          <div
+            key={`${rowIndex}-${colIndex}`}
+            className={className(
+              `w-[${TILESIZE}px] h-[${TILESIZE}px]`,
+              tile === 1 ? "bg-red-500" : "bg-green-500"
+            )}
+          />
+        ))
+      )}
+    </div>
+  );
+});
+
+const PixStage = memo(
+  ({
+    spritePosition,
+    world,
+  }: {
+    spritePosition: {
+      x: number;
+      y: number;
+    };
+    world: {
+      name: "fallarbor";
+      height: number;
+      width: number;
+    };
+  }) => {
+    return (
+      <PixiStage
+        width={world.width * TILESIZE}
+        height={world.height * TILESIZE}
+        options={{ backgroundAlpha: 0 }}
+        className="absolute"
+      >
+        <Container x={START[0]} y={START[1]}>
+          <Sprite
+            image="https://pixijs.io/pixi-react/img/bunny.png"
+            x={spritePosition.x * TILESIZE}
+            y={spritePosition.y * TILESIZE}
+            anchor={new PIXI.Point(0.5, 0.5)}
+          />
+        </Container>
+      </PixiStage>
+    );
+  }
+);
+
 const Stage = ({
   world,
+  onGoBack,
 }: {
   world: {
     name: "fallarbor";
     height: number;
     width: number;
   };
+  onGoBack: () => void;
 }) => {
   const [spritePosition, setSpritePosition] = useState({
     x: START[0],
@@ -203,7 +260,13 @@ const Stage = ({
   }, []);
 
   return (
-    <div className="relative overscroll-none flex justify-center items-center h-screen rounded-md overflow-hidden">
+    <div className="bg-gray-600 relative overscroll-none flex justify-center items-center h-screen overflow-hidden">
+      <button
+        onClick={onGoBack}
+        className="absolute right-4 bottom-4 text-gray-800 font-semibold bg-[#f4c761] rounded px-4 py-3"
+      >
+        Go Back
+      </button>
       <div className="absolute">
         <TileMap map={map} />
       </div>
@@ -217,62 +280,5 @@ const Stage = ({
     </div>
   );
 };
-
-const Grid = memo(({ map }: { map: number[][] }) => {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${map[0].length}, 1px)`,
-      }}
-    >
-      {map.flatMap((row, rowIndex) =>
-        row.map((tile, colIndex) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            className={className(
-              `w-[${TILESIZE}px] h-[${TILESIZE}px]`,
-              tile === 1 ? "bg-red-500" : "bg-green-500"
-            )}
-          />
-        ))
-      )}
-    </div>
-  );
-});
-const PixStage = memo(
-  ({
-    spritePosition,
-    world,
-  }: {
-    spritePosition: {
-      x: number;
-      y: number;
-    };
-    world: {
-      name: "fallarbor";
-      height: number;
-      width: number;
-    };
-  }) => {
-    return (
-      <PixiStage
-        width={world.width * TILESIZE}
-        height={world.height * TILESIZE}
-        options={{ backgroundAlpha: 0 }}
-        className="absolute"
-      >
-        <Container x={START[0]} y={START[1]}>
-          <Sprite
-            image="https://pixijs.io/pixi-react/img/bunny.png"
-            x={spritePosition.x * TILESIZE}
-            y={spritePosition.y * TILESIZE}
-            anchor={new PIXI.Point(0.5, 0.5)}
-          />
-        </Container>
-      </PixiStage>
-    );
-  }
-);
 
 export { Stage };
