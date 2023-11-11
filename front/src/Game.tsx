@@ -12,6 +12,36 @@ const SPEED = 2;
 const START = [50, 50];
 const TILESIZE = 10;
 
+function isSafeRegion(map, startX, startY): boolean {
+  for (let y = startY; y < startY + 4; y++) {
+    for (let x = startX; x < startX + 4; x++) {
+      if (map[y] && map[y][x] === 1) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+// Step 2: Iterate through the map and check each 4x4 region
+function findSafeRegions(map): { x: number; y: number }[] {
+  const safeRegions = [];
+  for (let y = 0; y < map.length - 3; y++) {
+    for (let x = 0; x < map[0].length - 3; x++) {
+      if (isSafeRegion(map, x, y)) {
+        safeRegions.push({ x, y });
+      }
+    }
+  }
+  return safeRegions;
+}
+
+export type Fact = {
+  url: string;
+  mnemonic: string;
+  fact: string;
+};
+
 enum ArrowKey {
   Left = "ArrowLeft",
   Up = "ArrowUp",
@@ -127,44 +157,45 @@ const Grid = memo(({ map }: { map: number[][] }) => {
   );
 });
 
-const PixStage = memo(
-  ({
-    spritePosition,
-    world,
-  }: {
-    spritePosition: {
-      x: number;
-      y: number;
-    };
-    world: {
-      name: "fallarbor";
-      height: number;
-      width: number;
-    };
-  }) => {
-    return (
-      <PixiStage
-        width={world.width * TILESIZE}
-        height={world.height * TILESIZE}
-        options={{ backgroundAlpha: 0 }}
-        className="absolute"
-      >
-        <Container x={START[0]} y={START[1]}>
-          <Sprite
-            image="https://pixijs.io/pixi-react/img/bunny.png"
-            x={spritePosition.x * TILESIZE}
-            y={spritePosition.y * TILESIZE}
-            anchor={new PIXI.Point(0.5, 0.5)}
-          />
-        </Container>
-      </PixiStage>
-    );
-  }
-);
+// const PixStage = memo(
+//   ({
+//     spritePosition,
+//     world,
+//   }: {
+//     spritePosition: {
+//       x: number;
+//       y: number;
+//     };
+//     world: {
+//       name: "fallarbor";
+//       height: number;
+//       width: number;
+//     };
+//   }) => {
+//     return (
+//       <PixiStage
+//         width={world.width * TILESIZE}
+//         height={world.height * TILESIZE}
+//         options={{ backgroundAlpha: 0 }}
+//         className="absolute"
+//       >
+//         <Container x={START[0]} y={START[1]}>
+//           <Sprite
+//             image="https://pixijs.io/pixi-react/img/bunny.png"
+//             x={spritePosition.x * TILESIZE}
+//             y={spritePosition.y * TILESIZE}
+//             anchor={new PIXI.Point(0.5, 0.5)}
+//           />
+//         </Container>
+//       </PixiStage>
+//     );
+//   }
+// );
 
 const Stage = ({
   world,
   onGoBack,
+  facts,
 }: {
   world: {
     name: "fallarbor";
@@ -172,6 +203,7 @@ const Stage = ({
     width: number;
   };
   onGoBack: () => void;
+  facts: Fact[];
 }) => {
   const [spritePosition, setSpritePosition] = useState({
     x: START[0],
@@ -204,6 +236,11 @@ const Stage = ({
 
     return map;
   }, []);
+
+  // Step 3: Store the coordinates of the safe regions
+  const safeRegions = useMemo(() => {
+    return findSafeRegions(map);
+  }, [world]);
 
   useEffect(() => {
     spritePositionRef.current = spritePosition;
@@ -260,11 +297,74 @@ const Stage = ({
       {!DEBUG && (
         <>
           <Grid map={map} />
-          <PixStage spritePosition={spritePosition} world={world} />
+          <PixStage
+            spritePosition={spritePosition}
+            world={world}
+            safeRegions={safeRegions}
+            facts={facts}
+          />
         </>
       )}
     </div>
   );
 };
+
+const PixStage = memo(
+  ({
+    spritePosition,
+    world,
+    safeRegions,
+    facts,
+  }: {
+    spritePosition: {
+      x: number;
+      y: number;
+    };
+    world: {
+      name: "fallarbor";
+      height: number;
+      width: number;
+    };
+    safeRegions: { x: number; y: number }[];
+    facts: Fact[];
+  }) => {
+    // for each fact, pick a random safe region
+    const randomSafeRegions = useMemo(() => {
+      return facts.map((fact) => {
+        const randomIndex = Math.floor(Math.random() * safeRegions.length);
+        return safeRegions[randomIndex];
+      });
+    }, [facts, safeRegions]);
+
+    return (
+      <PixiStage
+        width={world.width * TILESIZE}
+        height={world.height * TILESIZE}
+        options={{ backgroundAlpha: 0 }}
+        className="absolute"
+      >
+        <Container x={START[0]} y={START[1]}>
+          <Sprite
+            image="https://pixijs.io/pixi-react/img/bunny.png"
+            x={spritePosition.x * TILESIZE}
+            y={spritePosition.y * TILESIZE}
+            anchor={new PIXI.Point(0.5, 0.5)}
+          />
+          {randomSafeRegions.map((region, index) => (
+            <Sprite
+              key={index}
+              image={facts[index].url} // Assuming facts is an array of Fact objects
+              x={region.x * TILESIZE}
+              y={region.y * TILESIZE}
+              anchor={new PIXI.Point(0.5, 0.5)}
+              width={60} // Set the width of the image
+              height={60} // Set the height of the image
+            />
+          ))}
+        </Container>
+      </PixiStage>
+    );
+  }
+);
 
 export { Stage };
