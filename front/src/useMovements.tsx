@@ -145,24 +145,32 @@ export const useMovement = ({
     const newX = x + speedX;
     const oldTileY = Math.floor(y / TILESIZE);
     const oldTileX = Math.floor(x / TILESIZE);
-    const newTileY = Math.floor(newY / TILESIZE);
-    const newTileX = Math.floor(newX / TILESIZE);
 
     if (map[oldTileY][oldTileX] === PRIZE_TILE) {
-      console.log("bruh");
       setPlayerPrizePos({ x: oldTileX, y: oldTileY });
     } else {
-      console.log("yoink");
       setPlayerPrizePos(null);
     }
 
-    if (map[oldTileY][newTileX] !== COLLISION_TILE) {
+    const newTileY = Math.floor(newY / TILESIZE);
+    const newTileX = Math.floor(newX / TILESIZE);
+
+    if (
+      newTileX >= 0 &&
+      newTileX < map[oldTileY].length &&
+      map[oldTileY][newTileX] !== COLLISION_TILE
+    ) {
       setX(newX);
     } else {
       // If hit wall, reset momentum.
       setSpeedX(0);
     }
-    if (map[newTileY][oldTileX] !== COLLISION_TILE) {
+
+    if (
+      newTileY >= 0 &&
+      newTileY < map.length &&
+      map[newTileY][oldTileX] !== COLLISION_TILE
+    ) {
       setY(newY);
     } else {
       // If hit wall, reset momentum.
