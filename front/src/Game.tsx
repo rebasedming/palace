@@ -296,27 +296,4 @@ const Stage = ({
   );
 };
 
-const Grid = memo(({ map }: { map: number[][] }) => {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${map[0].length}, 1px)`,
-      }}
-    >
-      {map.flatMap((row, rowIndex) =>
-        row.map((tile, colIndex) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            className={className(
-              `w-[${TILESIZE}px] h-[${TILESIZE}px]`,
-              tile === 1 ? "bg-red-500" : "bg-green-500"
-            )}
-          />
-        ))
-      )}
-    </div>
-  );
-});
-
 export { Stage };
