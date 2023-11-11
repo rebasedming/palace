@@ -1,6 +1,7 @@
 import { AnimatedSprite, useTick } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatedSprite as PixiAnimatedSprite } from "@pixi/sprite-animated";
 
 enum ArrowKey {
   Left = "ArrowLeft",
@@ -23,7 +24,15 @@ const animations = {
   leftStop: convertToTextures(["left-stop"]),
 };
 
-console.log(animations.frontRun);
+const convertToAnimatedSprites = (filenames: string[]) => (
+  <AnimatedSprite
+    isPlaying={true}
+    textures={filenames.map((filename) =>
+      PIXI.Texture.from(`assets/char/${filename}.png`)
+    )}
+    animationSpeed={0.2}
+  />
+);
 
 export const Player = () => {
   const [moveY, setMoveY] = useState<"none" | "up" | "down">("none");
@@ -100,31 +109,43 @@ export const Player = () => {
     };
   }, [moveX, moveY]);
 
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
+  const [x, setX] = useState(100);
+  const [y, setY] = useState(200);
+
+  // Make sure animation plays after swapping.
+  useEffect(() => {
+    animatedSpriteRef.current?.gotoAndPlay(0);
+  }, [currentAnimation]);
+
+  const animatedSpriteRef = useRef<PixiAnimatedSprite | null>(null);
 
   useTick((delta) => {
-    const maxSpeed = 10 * delta;
-    const acceleration = 20;
+    const maxSpeed = 5 * delta;
+    const accelInterop = 10;
     const friction = 0.25;
 
     if (moveY === "up") {
-      setSpeedY((y) => y + (-maxSpeed - y) / acceleration);
+      setSpeedY((y) => y + (-maxSpeed - y) / accelInterop);
     } else if (moveY === "down") {
-      setSpeedY((y) => y + (maxSpeed - y) / acceleration);
+      setSpeedY((y) => y + (maxSpeed - y) / accelInterop);
     } else {
       setSpeedY((y) => y * (1 - friction));
     }
     setY((y) => y + speedY);
 
     if (moveX === "left") {
-      setSpeedX((x) => x + (-maxSpeed - x) / acceleration);
+      setSpeedX((x) => x + (-maxSpeed - x) / accelInterop);
     } else if (moveX === "right") {
-      setSpeedX((x) => x + (maxSpeed - x) / acceleration);
+      setSpeedX((x) => x + (maxSpeed - x) / accelInterop);
     } else {
       setSpeedX((x) => x * (1 - friction));
     }
     setX((x) => x + speedX);
+
+    // Reset the animation if it's not playing
+    // if (animatedSpriteRef.current?.playing) {
+
+    // }
   });
 
   return (
@@ -134,6 +155,8 @@ export const Player = () => {
       animationSpeed={0.2}
       x={x}
       y={y}
+      ref={animatedSpriteRef}
+      initialFrame={0}
     />
   );
 };
