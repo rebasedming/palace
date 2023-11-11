@@ -207,7 +207,6 @@ const PixStage = memo(
   ({
     spritePosition,
     world,
-    facts,
   }: {
     spritePosition: {
       x: number;
@@ -218,7 +217,6 @@ const PixStage = memo(
       height: number;
       width: number;
     };
-    facts: Fact[];
   }) => {
     return (
       <PixiStage
@@ -374,9 +372,14 @@ const Stage = ({
     x: START[0],
     y: START[1],
   });
-  const spritePositionRef = useRef(spritePosition);
   const [visibleFactIdx, setVisibleFactIdx] = useState(-1);
-  const [showInstructionBox, setShowInstructionBox] = useState(false);
+  const [showInstructionBox, setShowInstructionBox] = useState(true);
+  const [doorsVisited, setDoorsVisited] = useState([]);
+
+  const spritePositionRef = useRef(spritePosition);
+  const doorsVisitedRef = useRef(doorsVisited);
+
+  const numberOfFacts = facts.length;
 
   const map: number[][] = useMemo(() => {
     let map = Array.from({ length: world.height }, () =>
@@ -394,10 +397,15 @@ const Stage = ({
   }, [spritePosition]);
 
   useEffect(() => {
+    doorsVisitedRef.current = doorsVisited;
+  }, [doorsVisited]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const buffer = 4;
       let newX = spritePositionRef.current.x;
       let newY = spritePositionRef.current.y;
+      let newDoorsVisited = doorsVisitedRef.current;
 
       switch (e.key) {
         case ArrowKey.Up:
@@ -430,8 +438,10 @@ const Stage = ({
         map[newY + buffer] &&
         map[newY + buffer][newX + buffer] === PRIZE_TILE
       ) {
+        const visibleFactIdx = findClosestPrizeRegion([newX, newY]);
         setSpritePosition({ x: newX, y: newY });
-        setVisibleFactIdx(findClosestPrizeRegion([newX, newY]));
+        setVisibleFactIdx(visibleFactIdx);
+        setDoorsVisited([...new Set([...newDoorsVisited, visibleFactIdx])]);
       }
     };
 
@@ -461,7 +471,7 @@ const Stage = ({
         onClick={onGoBack}
         className="absolute right-4 bottom-4 text-gray-800 font-semibold bg-[#f4c761] rounded px-4 py-3 font-pokemon text-xs"
       >
-        Go Back
+        Start Over
       </button>
       <button
         onClick={() => setShowInstructionBox(true)}
@@ -469,6 +479,9 @@ const Stage = ({
       >
         Instructions
       </button>
+      <div className="absolute left-4 bottom-4 p-4 rounded bg-gray-800 font-pokemon text-sm text-gray-300">
+        Doors Visited: {doorsVisited.length}/{numberOfFacts}
+      </div>
       <div className="absolute">
         <TileMap map={map} />
       </div>
@@ -476,11 +489,7 @@ const Stage = ({
       {!DEBUG && (
         <>
           <Grid map={map} />
-          <PixStage
-            spritePosition={spritePosition}
-            world={world}
-            facts={facts}
-          />
+          <PixStage spritePosition={spritePosition} world={world} />
         </>
       )}
     </div>

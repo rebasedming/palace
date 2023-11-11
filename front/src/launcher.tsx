@@ -1,11 +1,11 @@
 import { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import TextareaAutosize from "react-textarea-autosize";
+import classNames from "classnames";
 
 import Palace from "@assets/palace.png";
 import StarBackground from "./components/stars";
 
-const RETRO_FONT = "'Press Start 2P', cursive";
 const ENTER_KEY = "Enter";
 
 interface LauncherProps {
@@ -51,32 +51,35 @@ const PromptBox = ({ isOpen, onClose, onSubmit }: PromptBoxProps) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-xl transform overflow-hidden rounded bg-neutral-800 p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="font-pokemon w-full max-w-xl transform overflow-hidden rounded bg-neutral-800 p-6 text-left align-middle shadow-xl transition-all">
                 <Dialog.Title
                   as="h3"
-                  className="text-2xl font-semibold leading-6 text-gray-100 text-center"
+                  className="text-lg font-semibold leading-6 text-gray-100 text-center"
                 >
-                  What would you like to memorize?
+                  What list would you like to memorize?
                 </Dialog.Title>
                 <div className="mt-6">
                   <TextareaAutosize
                     autoFocus
-                    className="bg-neutral-900 focus:ring-0 focus:outline-none w-full text-gray-300 p-6 resize-none"
+                    className="text-xs bg-neutral-900 focus:ring-0 focus:outline-none w-full text-gray-300 p-6 resize-none"
                     minRows={16}
-                    placeholder="Example: All the former presidents of the United States"
+                    placeholder="Example: Neil Armstrong, Buzz Aldrin, Michael Collins"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                   />
                 </div>
                 <div className="w-full mt-4 flex justify-between">
                   <button
-                    className="text-gray-800 font-semibold bg-[#f4c761] rounded px-4 py-3"
+                    className={classNames(
+                      "text-xs text-gray-800 font-semibold bg-[#f4c761] rounded px-4 py-3",
+                      input === "" && "bg-opacity-40"
+                    )}
                     onClick={() => onSubmit(input)}
                     disabled={input === ""}
                   >
                     Create Memory Palace
                   </button>
-                  <button className="text-gray-400" onClick={onClose}>
+                  <button className="text-xs text-gray-400" onClick={onClose}>
                     Go Back
                   </button>
                 </div>
@@ -103,12 +106,9 @@ const LaunchScreen = ({ onKeyPress }: LaunchScreenProps) => {
   }, []);
 
   return (
-    <div className="pt-12 text-center">
+    <div className="pt-12 text-center font-pokemon">
       <img src={Palace} className="w-64 h-64 mx-auto" />
-      <div
-        style={{ fontFamily: RETRO_FONT }}
-        className="text-7xl text-gray-100 mt-6"
-      >
+      <div className="text-7xl text-gray-100 mt-6">
         <span style={{ color: "#f4c761" }}>P</span>
         <span style={{ color: "#f3b661" }}>a</span>
         <span style={{ color: "#ef8e77" }}>l</span>
@@ -116,10 +116,8 @@ const LaunchScreen = ({ onKeyPress }: LaunchScreenProps) => {
         <span style={{ color: "#793787" }}>c</span>
         <span style={{ color: "#5773dd" }}>e</span>
       </div>
-      <div
-        style={{ fontFamily: RETRO_FONT }}
-        className="mt-24 text-lg text-gray-300 animate-pulse"
-      >
+      <div className="mt-4 text-gray-300">v1.0.0</div>
+      <div className="mt-24 text-lg text-gray-300 animate-pulse">
         Press Enter
       </div>
     </div>
@@ -138,7 +136,6 @@ const Launcher = ({ onSubmit }: LauncherProps) => {
   };
 
   const onSubmitPrompt = (text: string) => {
-    console.log(text);
     onSubmit();
   };
 
