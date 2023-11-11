@@ -25,6 +25,7 @@ server.on('request', async (req, res) => {
             const paragraphs = bodyText.split("\n")
             let urls = []
             for (idx in paragraphs) {
+                console.log(paragraphs[idx])
                 const img = await (generateImageFromSummary(paragraphs[idx]))
                 console.log(img)
                 urls.push(img)
@@ -85,7 +86,7 @@ async function summarizeFromText(text) {
 
 async function generateImageFromSummary(text) {
     const completion = await openai.chat.completions.create({
-        messages: [{ "role": "system", "content": "You are an assistant that creates text prompts for DALLE-3 to generate image mnemonics to aid studying. Try to use puns or any other methods." },
+        messages: [{ "role": "system", "content": "You are an assistant that creates text prompts for DALLE-3 to generate image mnemonics to aid studying. Try to use puns or any other methods. Generate in a cartoon style" },
         { "role": "user", "content": `Buzz aldrin was one of first astronauts on the moon` },
         { "role": "system", "content": `A bumblebee in an astronaut costume on the moon with a nametag that says Buzz Aldrin` },
         { "role": "user", "content": text }],
