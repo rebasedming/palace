@@ -1,16 +1,15 @@
 import { Stage as PixiStage, Container, Sprite } from "@pixi/react";
-import React, { useState, useEffect, useRef, useMemo, memo } from "react";
+import { useState, useEffect, useRef, useMemo, memo } from "react";
 import * as PIXI from "pixi.js";
 import className from "classnames";
 import fallarbor from "../assets/maps/fallarbor.png";
 
+const DEBUG = false;
 const WIDTH = 80;
 const HEIGHT = 80;
 const SPEED = 2;
 const START = [50, 50];
 const TILESIZE = 10;
-import Pokemon from "./assets/pokemon.png";
-import { Player } from "./Player";
 
 enum ArrowKey {
   Left = "ArrowLeft",
@@ -55,7 +54,7 @@ const Tile = memo(
           width: tileSize,
           height: tileSize,
           backgroundColor: tile === 1 ? "red" : "green",
-          // opacity: 0.8,
+          opacity: DEBUG ? 1 : 0,
         }}
         // on click print the coordinates
         onClick={() => {
@@ -66,7 +65,7 @@ const Tile = memo(
   }
 );
 
-const TileMap = ({ map }: { map: number[][] }) => {
+const TileMap = memo(({ map }: { map: number[][] }) => {
   console.log("rendering tilemap");
   return (
     <div
@@ -85,7 +84,7 @@ const TileMap = ({ map }: { map: number[][] }) => {
           height: "100%",
           // no clicks
           pointerEvents: "none",
-          opacity: 0.5,
+          opacity: DEBUG ? 0.5 : 1,
         }}
       />
       {map.flatMap((row: number[], rowIndex: number) =>
@@ -100,7 +99,7 @@ const TileMap = ({ map }: { map: number[][] }) => {
       )}
     </div>
   );
-};
+});
 
 const Stage = () => {
   const [spritePosition, setSpritePosition] = useState({
@@ -118,6 +117,14 @@ const Stage = () => {
     map = setCollisionRegion(map, 56, 50, 17, 14);
 
     map = setCollisionRegion(map, 52, 20, 16, 12);
+    map = setCollisionRegion(map, 40, 44, 4, 4);
+    map = setCollisionRegion(map, 20, 56, 16, 16);
+    map = setCollisionRegion(map, 24, 20, 20, 12);
+    map = setCollisionRegion(map, 12, 28, 4, 4);
+
+    map = setCollisionRegion(map, 5, 57, 10, 10);
+    map = setCollisionRegion(map, 24, 32, 4, 4);
+    map = setCollisionRegion(map, 68, 20, 12, 4);
     return map;
   }, []);
 
@@ -162,13 +169,17 @@ const Stage = () => {
   }, []);
 
   return (
-    <div className="relative overscroll-none flex justify-center items-center h-screen">
+    <div className="relative overscroll-none flex justify-center items-center h-screen rounded-md overflow-hidden">
       <div className="absolute">
         <TileMap map={map} />
       </div>
 
-      {/* <Grid map={map} /> */}
-      {/* <PixStage spritePosition={spritePosition} /> */}
+      {!DEBUG && (
+        <>
+          <Grid map={map} />
+          <PixStage spritePosition={spritePosition} />
+        </>
+      )}
     </div>
   );
 };
