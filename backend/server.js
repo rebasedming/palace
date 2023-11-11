@@ -4,10 +4,13 @@ const OpenAI = require("openai")
 const hostname = '127.0.0.1';
 const port = 3001;
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 const server = http.createServer();
 
 const openai = new OpenAI({
-    apiKey: ""
+    apiKey: process.env.OPENAI_API_KEY
 });
 
 server.on('request', async (req, res) => {
