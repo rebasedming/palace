@@ -1,12 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
-import { Pixi } from "./Pixi.tsx";
+import { Stage } from "./stage";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     {/* <App /> */}
-    <Pixi />
+    <Stage />
   </React.StrictMode>
 );
