@@ -270,7 +270,7 @@ const PromptBox = ({
                     className="w-full col-span-2"
                   />
                   <div className="col-span-3 text-gray-100">
-                    <h3 className="font-bold text-lg text-[#f4c761]">Fact</h3>
+                    <h3 className="font-bold text-lg text-[#f4c761]">Thing</h3>
                     <div className="mt-4 text-gray-300 text-xs">
                       {facts[visibleFactIdx]?.fact}
                     </div>
