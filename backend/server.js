@@ -1,5 +1,7 @@
 const http = require('http');
 const url = require("url")
+const { JSDOM } = require('jsdom');
+const { Readability } = require('@mozilla/readability')
 const OpenAI = require("openai")
 const hostname = '127.0.0.1';
 const port = 3001;
@@ -17,15 +19,15 @@ server.on('request', async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
 
-    const parameter = pathname.slice(0)
-    console.log(parameter)
-    if (parameter) {
+    const parameter = pathname.slice(1)
+    if (parameter && parameter != "favicon.ico") {
         try {
             // const imageUrl = await generateImageFromPrompt(parameter);
-            const bodyText = await getArticleText(parameter)
+            const bodyText = await summarizeFromText(await getArticleText(parameter))
+            const imageUrl = await generateImageFromPrompt(bodyText);
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ url: bodyText }));
+            res.end(JSON.stringify({ url: imageUrl, text: bodyText }));
         } catch (error) {
             res.statusCode = 500;
             res.setHeader('Content-Type', 'text/plain');
@@ -52,18 +54,40 @@ async function generateImageFromPrompt(prompt) {
         size: "1024x1024",
     });
     const url = response.data[0].url
-    console.log(url)
     return url
 }
 
-async function getArticleText(prompt) {
+async function getArticleText(url) {
     try {
         const response = await fetch(url);
         const html = await response.text();
         const doc = new JSDOM(html, { url }).window.document;
         const reader = new Readability(doc);
-        return reader.parse();
+        return reader.parse().textContent;
     } catch (error) {
-        // console.error(error)
+        console.error(error)
     }
+}
+
+async function summarizeFromText(text) {
+    const completion = await openai.chat.completions.create({
+        messages: [{ "role": "system", "content": "You are a helpful assistant looks at text pulled from a article from a website and summarizes the content into key point paragraphs. Do not summarize anything regarding the medium of the article itself. Only summarize the content of the article text." },
+        { "role": "user", "content": `This is the text ${text}` }],
+        model: "gpt-4-1106-preview",
+    });
+
+    return completion.choices[0].message.content
+}
+
+async function generateImageFromSummary(text) {
+    const completion = await openai.chat.completions.create({
+        messages: [{ "role": "system", "content": "You are an assistant that creates text prompts for DALLE-3 to generate image mnemonics to aid studying." },
+        { "role": "user", "content": `Buzz aldrin was one of first astronauts on the moon` },
+        { "role": "system", "content": `A bumblebee in an astronaut costume on the moon with a nametag that says Buzz Aldrin` },
+        { "role": "user", "content": text }],
+        model: "gpt-4-1106-preview",
+    });
+    const result = completion.choices[0].message.content
+
+    return await generateImageFromPrompt(result)
 }
