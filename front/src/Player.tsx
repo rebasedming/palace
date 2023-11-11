@@ -2,13 +2,25 @@ import { AnimatedSprite } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { useMovement } from "./useMovements";
 import { START } from "./Game";
+import { useEffect } from "react";
 
-export const Player = ({ map }: { map: number[][] }) => {
-  const { x, y, currentAnimation, animatedSpriteRef } = useMovement({
-    initialX: 400,
-    initialY: 400,
-    map,
-  });
+export const Player = ({
+  map,
+  setPlayerPrizePos,
+}: {
+  map: number[][];
+  setPlayerPrizePos: (pos: { x: number; y: number } | null) => void;
+}) => {
+  const { x, y, currentAnimation, animatedSpriteRef, playerPrizePos } =
+    useMovement({
+      initialX: 450,
+      initialY: 450,
+      map,
+    });
+
+  useEffect(() => {
+    setPlayerPrizePos(playerPrizePos);
+  }, [playerPrizePos]);
 
   return (
     <AnimatedSprite
@@ -19,7 +31,7 @@ export const Player = ({ map }: { map: number[][] }) => {
       y={y}
       ref={animatedSpriteRef}
       initialFrame={0}
-      anchor={new PIXI.Point(2, 1.5)}
+      anchor={new PIXI.Point(0.5, 0.5)}
     />
   );
 };

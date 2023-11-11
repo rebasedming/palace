@@ -2,7 +2,7 @@ import { useTick } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { useEffect, useRef, useState } from "react";
 import { AnimatedSprite as PixiAnimatedSprite } from "@pixi/sprite-animated";
-import { TILESIZE } from "./Game";
+import { COLLISION_TILE, PRIZE_TILE, SAFE_TILE, TILESIZE } from "./Game";
 
 enum ArrowKey {
   Left = "ArrowLeft",
@@ -40,6 +40,10 @@ export const useMovement = ({
   const [speedX, setSpeedX] = useState(0);
   const [x, setX] = useState(initialX);
   const [y, setY] = useState(initialY);
+  const [playerPrizePos, setPlayerPrizePos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const [currentAnimation, setCurrentAnimation] = useState<
     PIXI.Texture<PIXI.Resource>[]
@@ -143,13 +147,22 @@ export const useMovement = ({
     const oldTileX = Math.floor(x / TILESIZE);
     const newTileY = Math.floor(newY / TILESIZE);
     const newTileX = Math.floor(newX / TILESIZE);
-    if (map[oldTileY][newTileX] === 0) {
+
+    if (map[oldTileY][oldTileX] === PRIZE_TILE) {
+      console.log("bruh");
+      setPlayerPrizePos({ x, y });
+    } else {
+      console.log("yoink");
+      setPlayerPrizePos(null);
+    }
+
+    if (map[oldTileY][newTileX] !== COLLISION_TILE) {
       setX(newX);
     } else {
       // If hit wall, reset momentum.
       setSpeedX(0);
     }
-    if (map[newTileY][oldTileX] === 0) {
+    if (map[newTileY][oldTileX] !== COLLISION_TILE) {
       setY(newY);
     } else {
       // If hit wall, reset momentum.
@@ -162,5 +175,6 @@ export const useMovement = ({
     x,
     y,
     animatedSpriteRef,
+    playerPrizePos,
   };
 };
