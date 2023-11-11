@@ -45,9 +45,9 @@ server.on('request', async (req, res) => {
             res.end(`Error: ${error.message}`);
         }
     } else {
-        res.statusCode = 404;
+        res.statusCode = 200;
         res.setHeader('Content-Type', 'text/plain');
-        res.end('Not Found\n');
+        res.end('hello');
     }
 });
 
