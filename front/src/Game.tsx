@@ -1,13 +1,13 @@
 import { Stage as PixiStage, Container, Sprite } from "@pixi/react";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, memo } from "react";
 import * as PIXI from "pixi.js";
 import className from "classnames";
-// import Pokemon from "./assets/pokemon.png";
+import fallarbor from "../assets/maps/fallarbor.png";
 
 const WIDTH = 100;
-const HEIGHT = 50;
+const HEIGHT = 100;
 const SPEED = 1;
-const START = [10, 10];
+const START = [50, 50];
 const TILESIZE = 10;
 import Pokemon from "./assets/pokemon.png";
 import { Player } from "./Player";
@@ -37,28 +37,44 @@ const setCollisionRegion = (
   return map;
 };
 
-const TileMap = ({ map }) => {
+const TileMap = ({ map }: { map: number[][] }) => {
   const tileSize = 10;
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${map[0].length}, ${tileSize}px)`,
-      }}
-    >
-      {map.flatMap((row, rowIndex) =>
-        row.map((tile, colIndex) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            style={{
-              width: tileSize,
-              height: tileSize,
-              backgroundColor: tile === 1 ? "red" : "green",
-            }}
-          />
-        ))
-      )}
+    <div>
+      <img
+        src={fallarbor}
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          height: "100%",
+        }}
+      />
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${map[0].length}, ${tileSize}px)`,
+        }}
+      >
+        {map.flatMap((row: number[], rowIndex: number) =>
+          row.map((tile, colIndex) => (
+            <div
+              key={`${rowIndex}-${colIndex}`}
+              style={{
+                width: tileSize,
+                height: tileSize,
+                backgroundColor: tile === 1 ? "red" : "green",
+                opacity: 0.5,
+              }}
+              // on click print the coordinates
+              onClick={() => console.log(rowIndex, colIndex)}
+            ></div>
+          ))
+        )}
+      </div>
     </div>
   );
 };
@@ -69,15 +85,20 @@ const Stage = () => {
     y: START[1],
   });
   const spritePositionRef = useRef(spritePosition);
-  let map = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill(0));
-  map = setCollisionRegion(map, 20, 20, 10, 10);
+  const map: number[][] = useMemo(() => {
+    let map = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill(0));
+    map = setCollisionRegion(map, 20, 20, 10, 10);
+    map = setCollisionRegion(map, 0, 0, 100, 20);
+    map = setCollisionRegion(map, 0, 0, 15, 30);
+    return map;
+  }, []);
 
   useEffect(() => {
     spritePositionRef.current = spritePosition;
   }, [spritePosition]);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       let newX = spritePositionRef.current.x;
       let newY = spritePositionRef.current.y;
 
@@ -109,6 +130,7 @@ const Stage = () => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -116,24 +138,44 @@ const Stage = () => {
       <div className="absolute">
         <TileMap map={map} />
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${map[0].length}, 1px)`,
-        }}
-      >
-        {map.flatMap((row, rowIndex) =>
-          row.map((tile, colIndex) => (
-            <div
-              key={`${rowIndex}-${colIndex}`}
-              className={className(
-                `w-[${TILESIZE}px] h-[${TILESIZE}px]`,
-                tile === 1 ? "bg-red-500" : "bg-green-500"
-              )}
-            />
-          ))
-        )}
-      </div>
+      <Grid map={map} />
+      <PixStage spritePosition={spritePosition} />
+    </div>
+  );
+};
+
+const Grid = memo(({ map }: { map: number[][] }) => {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${map[0].length}, 1px)`,
+      }}
+    >
+      {map.flatMap((row, rowIndex) =>
+        row.map((tile, colIndex) => (
+          <div
+            key={`${rowIndex}-${colIndex}`}
+            className={className(
+              `w-[${TILESIZE}px] h-[${TILESIZE}px]`,
+              tile === 1 ? "bg-red-500" : "bg-green-500"
+            )}
+          />
+        ))
+      )}
+    </div>
+  );
+});
+const PixStage = memo(
+  ({
+    spritePosition,
+  }: {
+    spritePosition: {
+      x: number;
+      y: number;
+    };
+  }) => {
+    return (
       <PixiStage
         width={WIDTH * TILESIZE}
         height={HEIGHT * TILESIZE}
@@ -149,8 +191,8 @@ const Stage = () => {
           />
         </Container>
       </PixiStage>
-    </div>
-  );
-};
+    );
+  }
+);
 
 export { Stage };
