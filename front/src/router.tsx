@@ -4,6 +4,7 @@ import { Stage, Fact } from "./Game";
 import Launcher from "./launcher";
 
 import presidentsMockData from "../../backend/presidents.json";
+import bridgeMockData from "../../backend/bridge.json";
 
 enum Page {
   Launcher = 0,
@@ -39,7 +40,7 @@ const Router = () => {
             width: 80,
           }}
           onGoBack={() => setPage(Page.Launcher)}
-          facts={presidentsMockData.content.slice(0, 5) as Fact[]}
+          facts={bridgeMockData.content.slice(0, 5) as Fact[]}
         />
       </div>
     );
