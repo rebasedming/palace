@@ -5,8 +5,7 @@ import className from "classnames";
 import fallarbor from "../assets/maps/fallarbor.png";
 
 const DEBUG = false;
-const WIDTH = 80;
-const HEIGHT = 80;
+
 const SPEED = 2;
 const START = [50, 50];
 const TILESIZE = 10;
@@ -20,15 +19,20 @@ enum ArrowKey {
 
 const setCollisionRegion = (
   map: number[][],
-  startX: number,
-  startY: number,
-  regionWidth: number,
-  regionHeight: number
+  items: [number, number, number, number][],
+  worldHeight: number,
+  worldWidth: number
 ) => {
-  for (let y = startY; y < startY + regionHeight; y++) {
-    for (let x = startX; x < startX + regionWidth; x++) {
-      if (x < WIDTH && y < HEIGHT) {
-        map[y][x] = 1;
+  for (const item of items) {
+    const startX = item[0];
+    const startY = item[1];
+    const regionWidth = item[2];
+    const regionHeight = item[3];
+    for (let y = startY; y < startY + regionHeight; y++) {
+      for (let x = startX; x < startX + regionWidth; x++) {
+        if (x < worldHeight && y < worldWidth) {
+          map[y][x] = 1;
+        }
       }
     }
   }
@@ -101,30 +105,60 @@ const TileMap = memo(({ map }: { map: number[][] }) => {
   );
 });
 
-const Stage = () => {
+const Stage = ({
+  world,
+}: {
+  world: {
+    name: "fallarbor";
+    height: number;
+    width: number;
+  };
+}) => {
   const [spritePosition, setSpritePosition] = useState({
     x: START[0],
     y: START[1],
   });
   const spritePositionRef = useRef(spritePosition);
   const map: number[][] = useMemo(() => {
-    let map = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill(0));
+    let map = Array.from({ length: world.height }, () =>
+      Array(world.width).fill(0)
+    );
 
-    map = setCollisionRegion(map, 0, 0, 80, 20);
+    // map = setCollisionRegion(map, 0, 0, 80, 20);
 
-    map = setCollisionRegion(map, 0, 0, 15, 30);
+    // map = setCollisionRegion(map, 0, 0, 15, 30);
 
-    map = setCollisionRegion(map, 56, 50, 17, 14);
+    // map = setCollisionRegion(map, 56, 50, 17, 14);
 
-    map = setCollisionRegion(map, 52, 20, 16, 12);
-    map = setCollisionRegion(map, 40, 44, 4, 4);
-    map = setCollisionRegion(map, 20, 56, 16, 16);
-    map = setCollisionRegion(map, 24, 20, 20, 12);
-    map = setCollisionRegion(map, 12, 28, 4, 4);
+    // map = setCollisionRegion(map, 52, 20, 16, 12);
+    // map = setCollisionRegion(map, 40, 44, 4, 4);
+    // map = setCollisionRegion(map, 20, 56, 16, 16);
+    // map = setCollisionRegion(map, 24, 20, 20, 12);
+    // map = setCollisionRegion(map, 12, 28, 4, 4);
 
-    map = setCollisionRegion(map, 5, 57, 10, 10);
-    map = setCollisionRegion(map, 24, 32, 4, 4);
-    map = setCollisionRegion(map, 68, 20, 12, 4);
+    // map = setCollisionRegion(map, 5, 57, 10, 10);
+    // map = setCollisionRegion(map, 24, 32, 4, 4);
+    // map = setCollisionRegion(map, 68, 20, 12, 4);
+
+    map = setCollisionRegion(
+      map,
+      [
+        [0, 0, 80, 20],
+        [0, 0, 15, 30],
+        [56, 50, 17, 14],
+        [52, 20, 16, 12],
+        [40, 44, 4, 4],
+        [20, 56, 16, 16],
+        [24, 20, 20, 12],
+        [12, 28, 4, 4],
+        [5, 57, 10, 10],
+        [24, 32, 4, 4],
+        [68, 20, 12, 4],
+      ],
+      world.height,
+      world.width
+    );
+
     return map;
   }, []);
 
@@ -177,7 +211,7 @@ const Stage = () => {
       {!DEBUG && (
         <>
           <Grid map={map} />
-          <PixStage spritePosition={spritePosition} />
+          <PixStage spritePosition={spritePosition} world={world} />
         </>
       )}
     </div>
@@ -209,16 +243,22 @@ const Grid = memo(({ map }: { map: number[][] }) => {
 const PixStage = memo(
   ({
     spritePosition,
+    world,
   }: {
     spritePosition: {
       x: number;
       y: number;
     };
+    world: {
+      name: "fallarbor";
+      height: number;
+      width: number;
+    };
   }) => {
     return (
       <PixiStage
-        width={WIDTH * TILESIZE}
-        height={HEIGHT * TILESIZE}
+        width={world.width * TILESIZE}
+        height={world.height * TILESIZE}
         options={{ backgroundAlpha: 0 }}
         className="absolute"
       >
