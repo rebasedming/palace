@@ -2,4 +2,4 @@
 
 ## Development
 
-Run `docker compose up`.
+Run `yarn && yarn dev`.
