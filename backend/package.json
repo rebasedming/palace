@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@mozilla/readability": "^0.4.4",
+    "dotenv": "^16.3.1",
     "jsdom": "^22.1.0",
     "openai": "^4.17.4"
   },
