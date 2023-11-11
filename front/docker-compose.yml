@@ -6,7 +6,7 @@ services:
     volumes:
       - .:/palace
     working_dir: /palace
-    command: yarn run dev
+    command: yarn run dev --host
     ports:
       - "3000:3000"
 
