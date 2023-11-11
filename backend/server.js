@@ -1,130 +1,138 @@
-const http = require('http');
-const url = require("url")
-const fs = require("fs")
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const fetch = require('node-fetch');
 const { JSDOM } = require('jsdom');
-const { Readability } = require('@mozilla/readability')
-const OpenAI = require("openai")
-const hostname = '127.0.0.1';
-const port = 3001;
-
+const { Readability } = require('@mozilla/readability');
+const OpenAI = require('openai');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const server = http.createServer();
+const app = express();
+app.use(cors());
+app.use(express.json());
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY
 });
 
-server.on('request', async (req, res) => {
-    const parsedUrl = url.parse(req.url, true);
-    const pathname = parsedUrl.pathname;
-    const parameter = pathname.slice(1)
-    if (parameter === 'data') {
-        // Serve the data.json file
-        fs.readFile('data.json', 'utf8', (err, data) => {
-            if (err) {
-                res.statusCode = 500;
-                res.setHeader('Content-Type', 'text/plain');
-                res.end(`Error reading file: ${err.message}`);
-            } else {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(data);
-            }
-        });
-    }
-    else if (parameter && parameter != "favicon.ico") {
-        try {
-            const bodyText = await summarizeFromText(await getArticleText(parameter));
-            const paragraphs = bodyText.split("\n");
-            let data = [];
-
-            for (let idx in paragraphs) {
-                console.log(paragraphs[idx]);
-                const { url, mnemonic } = await generateImageFromSummary(paragraphs[idx]);
-                console.log(url);
-                data.push({ url, mnemonic, fact: paragraphs[idx] });
-            }
-
-            // Write to JSON file
-            fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
-
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ data }));
-        } catch (error) {
-            res.statusCode = 500;
-            res.setHeader('Content-Type', 'text/plain');
-            res.end(`Error: ${error.message}`);
-        }
+app.get('/data', (req, res) => {
+  fs.readFile('data.json', 'utf8', (err, data) => {
+    if (err) {
+      res.status(500).send(`Error reading file: ${err.message}`);
     } else {
-        res.statusCode = 404;
-        res.setHeader('Content-Type', 'text/plain');
-        res.end('Not Found\n');
+      res.status(200).json(JSON.parse(data));
     }
+  });
 });
 
+app.post('/input', async (req, res) => {
+  try {
+    const bodyText = await getFactsFromText(req.body.text);
+    const paragraphs = bodyText.split("\n").filter(
+      a => a.trim().length > 0
+    ).slice(0, 5)
+    let data = [];
 
-server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
+    for (let paragraph of paragraphs) {
+      const { url, mnemonic } = await generateImageFromSummary(paragraph);
+      data.push({ url, mnemonic, fact: paragraph });
+    }
+
+    fs.writeFileSync('data.json', JSON.stringify({ "content": data }, null, 2));
+    res.status(200).json({ data });
+  } catch (error) {
+    res.status(500).send(`Error: ${error.message}`);
+  }
 });
 
+// Additional route handlers (if any)...
+
+const port = 3001;
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
+
+// Helper Functions
 async function generateImageFromPrompt(prompt) {
-    console.log("generating image")
-    try {
-
-        const response = await openai.images.generate({
-            model: "dall-e-3",
-            prompt: prompt,
-            n: 1,
-            size: "1024x1024",
-        });
-        const url = response.data[0].url
-        return url
-    }
-    catch (error) {
-        console.error(error)
-    }
+  try {
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024",
+    });
+    const url = response.data[0].url;
+    return url;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function getArticleText(url) {
-    try {
-        const response = await fetch(url);
-        const html = await response.text();
-        const doc = new JSDOM(html, { url }).window.document;
-        const reader = new Readability(doc);
-        return reader.parse().textContent;
-    } catch (error) {
-        console.error(error)
-    }
+  try {
+    const response = await fetch(url);
+    const html = await response.text();
+    const doc = new JSDOM(html, { url }).window.document;
+    const reader = new Readability(doc);
+    return reader.parse().textContent;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 async function summarizeFromText(text) {
-    const completion = await openai.chat.completions.create({
-        messages: [{ "role": "system", "content": "You are a helpful assistant looks at text pulled from a article from a website and summarizes the content into key point facts organized by date. Do not summarize anything regarding the medium of the article itself. Only summarize the content of the article text. Split each fact with \n" },
-        { "role": "user", "content": `This is the text ${text}` }],
-        model: "gpt-4-1106-preview",
-    });
+  const completion = await openai.chat.completions.create({
+    messages: [
+      { "role": "system", "content": "You are a helpful assistant who looks at articles from a website and summarizes the content into key point facts organized by date. Do not summarize anything regarding the medium of the article itself. Only summarize the content of the article text. Only generate 4 facts. Split each fact with \n" },
+      { "role": "user", "content": `This is the text: ${text}` }
+    ],
+    model: "gpt-4-1106-preview",
+  });
+  return completion.choices[0].message.content;
+}
 
-    return completion.choices[0].message.content
+async function getFactsFromText(text) {
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {
+        "role": "system", "content": `You are a helpful assistant who is given a list of facts or items.
+      Your job is to sanitize the items and output them one by one separated by \n
+      They should be short, succinct, and insightful.` },
+      { "role": "user", "content": `This is the text: ${text}` }
+    ],
+    model: "gpt-4-1106-preview",
+  });
+
+  const content = completion.choices[0].message.content;
+  return content
 }
 
 async function generateImageFromSummary(text) {
-    const completion = await openai.chat.completions.create({
-        messages: [{ "role": "system", "content": "You are an assistant that creates text prompts for DALLE-3 to generate image mnemonics to aid studying. Try to use puns or any other methods. Generate in a cartoon style" },
-        { "role": "user", "content": `Buzz aldrin was one of first astronauts on the moon` },
-        { "role": "system", "content": `A bumblebee in an astronaut costume on the moon with a nametag that says Buzz Aldrin` },
-        { "role": "user", "content": text }],
-        model: "gpt-4-1106-preview",
-    });
-    const mnemonic = completion.choices[0].message.content;
-    try {
-
-        const url = await generateImageFromPrompt(mnemonic);
-        return { url, mnemonic, fact: text };
-    }
-    catch (error) {
-        console.error(error)
-    }
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {
+        "role": "system",
+        "content": `You are an assistant that creates text prompts for DALL-E to generate image mnemonics to aid studying.
+        Try to use puns or any other methods. Make it funny, weird, cute, strange and descriptive.
+        For names, break it down into subwords to create puns. For Roosevelt, consider making it moose-velt. Neil Armstrong could be a person kneeling with a strong arm.
+        The image should reflect the name of the thing rather than it's properties, since we want to make an image that helps the viewer remember the name.
+        Please, I have an exam and I really need to remember these facts.
+        `
+      },
+      { "role": "user", "content": text }
+    ],
+    model: "gpt-4-1106-preview",
+  });
+  const mnemonic = completion.choices[0].message.content;
+  console.log({
+    mnemonic,
+    text
+  })
+  try {
+    const url = await generateImageFromPrompt(mnemonic);
+    return { url, mnemonic };
+  } catch (error) {
+    console.error(error);
+  }
 }

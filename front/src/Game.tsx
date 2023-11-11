@@ -356,16 +356,22 @@ const Stage = ({
   onGoBack: () => void;
   facts: Fact[];
 }) => {
+  const [doorsVisited, setDoorsVisited] = useState([]);
+  console.log(doorsVisited);
   const setPlayerPrizePos = (pos: { x: number; y: number } | null) => {
     console.log(pos);
     if (pos) {
-      setVisibleFactIdx(findClosestPrizeRegion([pos.x, pos.y]));
+      const visibleFactIdxToShow = findClosestPrizeRegion([pos.x, pos.y]);
+      setVisibleFactIdx(visibleFactIdxToShow);
+      setDoorsVisited((dv) => [...new Set([...dv, visibleFactIdxToShow])]);
     } else {
       setVisibleFactIdx(-1);
     }
   };
   const [visibleFactIdx, setVisibleFactIdx] = useState(-1);
-  const [showInstructionBox, setShowInstructionBox] = useState(false);
+  const [showInstructionBox, setShowInstructionBox] = useState(true);
+
+  const numberOfFacts = facts.length;
 
   const map: number[][] = useMemo(() => {
     let map = Array.from({ length: world.height }, () =>
@@ -396,7 +402,7 @@ const Stage = ({
         onClick={onGoBack}
         className="absolute right-4 bottom-4 text-gray-800 font-semibold bg-[#f4c761] rounded px-4 py-3 font-pokemon text-xs"
       >
-        Go Back
+        Start Over
       </button>
       <button
         onClick={() => setShowInstructionBox(true)}
@@ -404,6 +410,9 @@ const Stage = ({
       >
         Instructions
       </button>
+      <div className="absolute left-4 bottom-4 p-4 rounded bg-gray-800 font-pokemon text-sm text-gray-300">
+        Doors Visited: {doorsVisited.length}/{numberOfFacts}
+      </div>
       <div className="absolute">
         <TileMap map={map} />
       </div>

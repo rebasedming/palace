@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Stage, Fact } from "./Game";
 import Launcher from "./launcher";
 
-import mockData from "@mock/mnemonics.json";
+import mockData from "../../backend/data.json";
 
 enum Page {
   Launcher = 0,
