@@ -26,8 +26,6 @@ const animations = {
 console.log(animations.frontRun);
 
 export const Player = () => {
-  const [pos, setPos] = useState(0);
-  const [dir, setDir] = useState<"front" | "back" | "left" | "right">("front");
   const [moveY, setMoveY] = useState<"none" | "up" | "down">("none");
   const [moveX, setMoveX] = useState<"none" | "left" | "right">("none");
   const [speedY, setSpeedY] = useState(0);
@@ -38,7 +36,7 @@ export const Player = () => {
   >(animations.leftRun);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
         case ArrowKey.Up:
           setMoveY("up");
@@ -62,7 +60,7 @@ export const Player = () => {
     };
     window.addEventListener("keydown", handleKeyDown);
 
-    const handleKeyUp = (e) => {
+    const handleKeyUp = (e: KeyboardEvent) => {
       switch (e.key) {
         case ArrowKey.Up:
           setMoveY("none");
@@ -80,13 +78,15 @@ export const Player = () => {
           setMoveX("none");
           if (moveY === "none") {
             setCurrentAnimation(animations.leftStop);
+            // setSpeedX(0);
           }
           break;
         case ArrowKey.Right:
+          setMoveX("none");
           if (moveY === "none") {
-            setMoveX("none");
+            setCurrentAnimation(animations.rightStop);
+            // setSpeedX(0);
           }
-          setCurrentAnimation(animations.rightStop);
           break;
         default:
           break;
@@ -104,23 +104,27 @@ export const Player = () => {
   const [y, setY] = useState(0);
 
   useTick((delta) => {
-    const toAdd = 5 * delta;
+    const maxSpeed = 10 * delta;
+    const acceleration = 20;
+    const friction = 0.25;
 
     if (moveY === "up") {
-      setY((y) => y - toAdd);
+      setSpeedY((y) => y + (-maxSpeed - y) / acceleration);
     } else if (moveY === "down") {
-      setY((y) => y + (toAdd - y) / 10);
+      setSpeedY((y) => y + (maxSpeed - y) / acceleration);
+    } else {
+      setSpeedY((y) => y * (1 - friction));
     }
-
-    console.log(speedX);
+    setY((y) => y + speedY);
 
     if (moveX === "left") {
-      setSpeedX((x) => (toAdd - x) / 10);
-      setX((y) => y - speedX);
+      setSpeedX((x) => x + (-maxSpeed - x) / acceleration);
     } else if (moveX === "right") {
-      setSpeedX((x) => (toAdd - x) / 10);
-      setX((y) => y + speedX);
+      setSpeedX((x) => x + (maxSpeed - x) / acceleration);
+    } else {
+      setSpeedX((x) => x * (1 - friction));
     }
+    setX((x) => x + speedX);
   });
 
   return (
