@@ -9,6 +9,8 @@ const HEIGHT = 50;
 const SPEED = 1;
 const START = [10, 10];
 const TILESIZE = 10;
+import Pokemon from "./assets/pokemon.png";
+import { Player } from "./Player";
 
 enum ArrowKey {
   Left = "ArrowLeft",
