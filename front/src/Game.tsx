@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo, memo } from "react";
 import * as PIXI from "pixi.js";
 import className from "classnames";
 import fallarbor from "../assets/maps/fallarbor.png";
+import React from "react";
 
 const DEBUG = false;
 
@@ -274,11 +275,48 @@ const Stage = ({
       {!DEBUG && (
         <>
           <Grid map={map} />
-          <PixStage spritePosition={spritePosition} world={world} />
+          <PixiStage
+            width={world.width * TILESIZE}
+            height={world.height * TILESIZE}
+            options={{ backgroundAlpha: 0 }}
+            className="absolute"
+          >
+            <Container x={START[0]} y={START[1]}>
+              <Sprite
+                image="https://pixijs.io/pixi-react/img/bunny.png"
+                x={spritePosition.x * TILESIZE}
+                y={spritePosition.y * TILESIZE}
+                anchor={new PIXI.Point(0.5, 0.5)}
+              />
+            </Container>
+          </PixiStage>
         </>
       )}
     </div>
   );
 };
+
+const Grid = memo(({ map }: { map: number[][] }) => {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${map[0].length}, 1px)`,
+      }}
+    >
+      {map.flatMap((row, rowIndex) =>
+        row.map((tile, colIndex) => (
+          <div
+            key={`${rowIndex}-${colIndex}`}
+            className={className(
+              `w-[${TILESIZE}px] h-[${TILESIZE}px]`,
+              tile === 1 ? "bg-red-500" : "bg-green-500"
+            )}
+          />
+        ))
+      )}
+    </div>
+  );
+});
 
 export { Stage };
