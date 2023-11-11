@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-game-kit": "^1.0.6"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
@@ -19,6 +21,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.3",
+    "esbuild-wasm": "^0.19.5",
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",

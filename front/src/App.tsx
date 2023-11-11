@@ -1,35 +1,83 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import Map from "./assets/pokemon.png";
 
-function App() {
-  const [count, setCount] = useState(0)
+import { Loop, Stage, World, Sprite, Body } from "react-game-kit";
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+enum ArrowKey {
+  LEFT,
+  RIGHT,
+  UP,
+  DOWN,
 }
 
-export default App
+function App() {
+  const [spritePosition, setSpritePosition] = useState({ x: 0, y: 0 });
+  const moveAmount = 5; // amount to move in each direction
+
+  const handleKeyDown = (e) => {
+    switch (e.key) {
+      case ArrowKey.UP:
+        setSpritePosition((prevPosition) => ({
+          ...prevPosition,
+          y: prevPosition.y - moveAmount,
+        }));
+        break;
+      case ArrowKey.DOWN:
+        setSpritePosition((prevPosition) => ({
+          ...prevPosition,
+          y: prevPosition.y + moveAmount,
+        }));
+        break;
+      case ArrowKey.LEFT:
+        setSpritePosition((prevPosition) => ({
+          ...prevPosition,
+          x: prevPosition.x - moveAmount,
+        }));
+        break;
+      case ArrowKey.RIGHT:
+        setSpritePosition((prevPosition) => ({
+          ...prevPosition,
+          x: prevPosition.x + moveAmount,
+        }));
+        break;
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup function
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []); // Empty dependency array means this effect runs once on mount and cleanup on unmount
+
+  return (
+    <div>
+      HELLO WORLD
+      <Loop>
+        <Stage width={800} height={600}>
+          <World>
+            <Body args={[0, 0, 75, 75]} ref={(b) => {}}>
+              <Sprite
+                repeat={false}
+                src={Map}
+                scale={1}
+                state={0}
+                steps={[0]}
+                tileWidth={64}
+                tileHeight={64}
+                x={spritePosition.x}
+                y={spritePosition.y}
+              />{" "}
+            </Body>
+          </World>
+        </Stage>
+      </Loop>
+    </div>
+  );
+}
+
+export default App;
