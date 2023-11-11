@@ -1,10 +1,13 @@
 import { AnimatedSprite } from "@pixi/react";
+import * as PIXI from "pixi.js";
 import { useMovement } from "./useMovements";
+import { START } from "./Game";
 
-export const Player = () => {
+export const Player = ({ map }: { map: number[][] }) => {
   const { x, y, currentAnimation, animatedSpriteRef } = useMovement({
-    initialX: 200,
-    initialY: 200,
+    initialX: 400,
+    initialY: 400,
+    map,
   });
 
   return (
@@ -16,6 +19,7 @@ export const Player = () => {
       y={y}
       ref={animatedSpriteRef}
       initialFrame={0}
+      anchor={new PIXI.Point(2, 1.5)}
     />
   );
 };

@@ -2,6 +2,7 @@ import { useTick } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { useEffect, useRef, useState } from "react";
 import { AnimatedSprite as PixiAnimatedSprite } from "@pixi/sprite-animated";
+import { TILESIZE } from "./Game";
 
 enum ArrowKey {
   Left = "ArrowLeft",
@@ -27,9 +28,11 @@ const animations = {
 export const useMovement = ({
   initialX,
   initialY,
+  map,
 }: {
   initialX: number;
   initialY: number;
+  map: number[][];
 }) => {
   const [moveY, setMoveY] = useState<"none" | "up" | "down">("none");
   const [moveX, setMoveX] = useState<"none" | "left" | "right">("none");
@@ -40,7 +43,7 @@ export const useMovement = ({
 
   const [currentAnimation, setCurrentAnimation] = useState<
     PIXI.Texture<PIXI.Resource>[]
-  >(animations.leftRun);
+  >(animations.frontStop);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -124,7 +127,6 @@ export const useMovement = ({
     } else {
       setSpeedY((y) => y * (1 - friction));
     }
-    setY((y) => y + speedY);
 
     if (moveX === "left") {
       setSpeedX((x) => x + (-maxSpeed - x) / accelInterop);
@@ -133,7 +135,26 @@ export const useMovement = ({
     } else {
       setSpeedX((x) => x * (1 - friction));
     }
-    setX((x) => x + speedX);
+
+    // Collision detection
+    const newY = y + speedY;
+    const newX = x + speedX;
+    const oldTileY = Math.floor(y / TILESIZE);
+    const oldTileX = Math.floor(x / TILESIZE);
+    const newTileY = Math.floor(newY / TILESIZE);
+    const newTileX = Math.floor(newX / TILESIZE);
+    if (map[oldTileY][newTileX] === 0) {
+      setX(newX);
+    } else {
+      // If hit wall, reset momentum.
+      setSpeedX(0);
+    }
+    if (map[newTileY][oldTileX] === 0) {
+      setY(newY);
+    } else {
+      // If hit wall, reset momentum.
+      setSpeedY(0);
+    }
   });
 
   return {

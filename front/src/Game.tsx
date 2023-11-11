@@ -5,12 +5,13 @@ import className from "classnames";
 import fallarbor from "../assets/maps/fallarbor.png";
 
 import mockData from "@mock/mnemonics.json";
+import { Player } from "./Player";
 
 const DEBUG = false;
 
 const SPEED = 2;
-const START = [50, 50];
-const TILESIZE = 10;
+export const START = [50, 50];
+export const TILESIZE = 10;
 
 function isSafeRegion(map, startX, startY): boolean {
   for (let y = startY; y < startY + 4; y++) {
@@ -41,13 +42,6 @@ export type Fact = {
   mnemonic: string;
   fact: string;
 };
-
-enum ArrowKey {
-  Left = "ArrowLeft",
-  Up = "ArrowUp",
-  Right = "ArrowRight",
-  Down = "ArrowDown",
-}
 
 const setCollisionRegion = (
   map: number[][],
@@ -205,11 +199,6 @@ const Stage = ({
   onGoBack: () => void;
   facts: Fact[];
 }) => {
-  const [spritePosition, setSpritePosition] = useState({
-    x: START[0],
-    y: START[1],
-  });
-  const spritePositionRef = useRef(spritePosition);
   const map: number[][] = useMemo(() => {
     let map = Array.from({ length: world.height }, () =>
       Array(world.width).fill(0)
@@ -242,46 +231,6 @@ const Stage = ({
     return findSafeRegions(map);
   }, [world]);
 
-  useEffect(() => {
-    spritePositionRef.current = spritePosition;
-  }, [spritePosition]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      let newX = spritePositionRef.current.x;
-      let newY = spritePositionRef.current.y;
-
-      switch (e.key) {
-        case ArrowKey.Up:
-          newY -= SPEED;
-          break;
-        case ArrowKey.Down:
-          newY += SPEED;
-          break;
-        case ArrowKey.Left:
-          newX -= SPEED;
-          break;
-        case ArrowKey.Right:
-          newX += SPEED;
-          break;
-        default:
-          break;
-      }
-
-      // Collision detection
-      if (map[newY + 4] && map[newY + 4][newX + 4] === 0) {
-        setSpritePosition({ x: newX, y: newY });
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className="bg-gray-600 relative overscroll-none flex justify-center items-center h-screen overflow-hidden">
       <button
@@ -298,10 +247,10 @@ const Stage = ({
         <>
           <Grid map={map} />
           <PixStage
-            spritePosition={spritePosition}
             world={world}
             safeRegions={safeRegions}
             facts={facts}
+            map={map}
           />
         </>
       )}
@@ -311,15 +260,11 @@ const Stage = ({
 
 const PixStage = memo(
   ({
-    spritePosition,
     world,
     safeRegions,
     facts,
+    map,
   }: {
-    spritePosition: {
-      x: number;
-      y: number;
-    };
     world: {
       name: "fallarbor";
       height: number;
@@ -327,6 +272,7 @@ const PixStage = memo(
     };
     safeRegions: { x: number; y: number }[];
     facts: Fact[];
+    map: number[][];
   }) => {
     // for each fact, pick a random safe region
     const randomSafeRegions = useMemo(() => {
@@ -344,12 +290,7 @@ const PixStage = memo(
         className="absolute"
       >
         <Container x={START[0]} y={START[1]}>
-          <Sprite
-            image="https://pixijs.io/pixi-react/img/bunny.png"
-            x={spritePosition.x * TILESIZE}
-            y={spritePosition.y * TILESIZE}
-            anchor={new PIXI.Point(0.5, 0.5)}
-          />
+          <Player map={map} />
           {randomSafeRegions.map((region, index) => (
             <Sprite
               key={index}
