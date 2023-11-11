@@ -39,7 +39,7 @@ app.post('/input', async (req, res) => {
       data.push({ url, mnemonic, fact: paragraph });
     }
 
-    fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
+    fs.writeFileSync('data.json', JSON.stringify({ "content": data }, null, 2));
     res.status(200).json({ data });
   } catch (error) {
     res.status(500).send(`Error: ${error.message}`);
