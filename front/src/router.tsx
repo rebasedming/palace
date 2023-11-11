@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import Stage from "./stage";
+import { Stage } from "./Game";
 import Launcher from "./launcher";
 
 enum Page {
@@ -12,7 +12,17 @@ const Router = () => {
   const [page, setPage] = useState(Page.Launcher);
 
   if (page === Page.Stage) {
-    return <Stage />;
+    return (
+      <div>
+        <Stage
+          world={{
+            name: "fallarbor",
+            height: 80,
+            width: 80,
+          }}
+        />
+      </div>
+    );
   } else {
     return <Launcher onSubmit={() => setPage(Page.Stage)} />;
   }
