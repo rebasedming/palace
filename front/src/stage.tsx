@@ -4,13 +4,11 @@ import * as PIXI from "pixi.js";
 import className from "classnames";
 import fallarbor from "../assets/maps/fallarbor.png";
 
-const WIDTH = 80;
-const HEIGHT = 80;
-const SPEED = 2;
+const WIDTH = 100;
+const HEIGHT = 100;
+const SPEED = 1;
 const START = [50, 50];
 const TILESIZE = 10;
-import Pokemon from "./assets/pokemon.png";
-import { Player } from "./Player";
 
 enum ArrowKey {
   Left = "ArrowLeft",
@@ -37,38 +35,11 @@ const setCollisionRegion = (
   return map;
 };
 
-const tileSize = 10;
-
-const Tile = memo(
-  ({
-    tile,
-    rowIndex,
-    colIndex,
-  }: {
-    tile: number;
-    rowIndex: number;
-    colIndex: number;
-  }) => {
-    return (
-      <div
-        style={{
-          width: tileSize,
-          height: tileSize,
-          backgroundColor: tile === 1 ? "red" : "green",
-          // opacity: 0.8,
-        }}
-        // on click print the coordinates
-        onClick={() => {
-          console.log(colIndex, rowIndex);
-        }}
-      ></div>
-    );
-  }
-);
-
 const TileMap = ({ map }: { map: number[][] }) => {
-  console.log("rendering tilemap");
+  const tileSize = 10;
+
   return (
+    // <div>
     <div
       style={{
         display: "grid",
@@ -83,22 +54,26 @@ const TileMap = ({ map }: { map: number[][] }) => {
           top: "50%",
           transform: "translate(-50%, -50%)",
           height: "100%",
-          // no clicks
-          pointerEvents: "none",
-          opacity: 0.5,
         }}
       />
+
       {map.flatMap((row: number[], rowIndex: number) =>
         row.map((tile, colIndex) => (
-          <Tile
+          <div
             key={`${rowIndex}-${colIndex}`}
-            tile={tile}
-            rowIndex={rowIndex}
-            colIndex={colIndex}
-          />
+            style={{
+              width: tileSize,
+              height: tileSize,
+              backgroundColor: tile === 1 ? "red" : "green",
+              opacity: 0.5,
+            }}
+            // on click print the coordinates
+            onClick={() => console.log(rowIndex, colIndex)}
+          ></div>
         ))
       )}
     </div>
+    // </div>
   );
 };
 
@@ -110,14 +85,9 @@ const Stage = () => {
   const spritePositionRef = useRef(spritePosition);
   const map: number[][] = useMemo(() => {
     let map = Array.from({ length: HEIGHT }, () => Array(WIDTH).fill(0));
-
-    map = setCollisionRegion(map, 0, 0, 80, 20);
-
+    map = setCollisionRegion(map, 20, 20, 10, 10);
+    map = setCollisionRegion(map, 0, 0, 100, 20);
     map = setCollisionRegion(map, 0, 0, 15, 30);
-
-    map = setCollisionRegion(map, 56, 50, 17, 14);
-
-    map = setCollisionRegion(map, 52, 20, 16, 12);
     return map;
   }, []);
 
@@ -148,7 +118,7 @@ const Stage = () => {
       }
 
       // Collision detection
-      if (map[newY + 4] && map[newY + 4][newX + 4] === 0) {
+      if (map[newY] && map[newY][newX] === 0) {
         setSpritePosition({ x: newX, y: newY });
       }
     };
@@ -163,12 +133,11 @@ const Stage = () => {
 
   return (
     <div className="relative overscroll-none flex justify-center items-center h-screen">
-      <div className="absolute">
+      {/* <div className="absolute">
         <TileMap map={map} />
       </div>
-
-      {/* <Grid map={map} /> */}
-      {/* <PixStage spritePosition={spritePosition} /> */}
+      <Grid map={map} /> */}
+      <PixStage spritePosition={spritePosition} />
     </div>
   );
 };
