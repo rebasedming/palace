@@ -18,16 +18,20 @@ const openai = new OpenAI({
 server.on('request', async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
-
     const parameter = pathname.slice(1)
     if (parameter && parameter != "favicon.ico") {
         try {
-            // const imageUrl = await generateImageFromPrompt(parameter);
             const bodyText = await summarizeFromText(await getArticleText(parameter))
-            const imageUrl = await generateImageFromPrompt(bodyText);
+            const paragraphs = bodyText.split("\n")
+            let urls = []
+            for (idx in paragraphs) {
+                const img = await (generateImageFromSummary(paragraphs[idx]))
+                console.log(img)
+                urls.push(img)
+            }
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ url: imageUrl, text: bodyText }));
+            res.end(JSON.stringify({ urls, paragraphs }));
         } catch (error) {
             res.statusCode = 500;
             res.setHeader('Content-Type', 'text/plain');
@@ -71,7 +75,7 @@ async function getArticleText(url) {
 
 async function summarizeFromText(text) {
     const completion = await openai.chat.completions.create({
-        messages: [{ "role": "system", "content": "You are a helpful assistant looks at text pulled from a article from a website and summarizes the content into key point paragraphs. Do not summarize anything regarding the medium of the article itself. Only summarize the content of the article text." },
+        messages: [{ "role": "system", "content": "You are a helpful assistant looks at text pulled from a article from a website and summarizes the content into key point facts organized by date. Do not summarize anything regarding the medium of the article itself. Only summarize the content of the article text. Split each fact with \n\n"},
         { "role": "user", "content": `This is the text ${text}` }],
         model: "gpt-4-1106-preview",
     });
@@ -81,13 +85,14 @@ async function summarizeFromText(text) {
 
 async function generateImageFromSummary(text) {
     const completion = await openai.chat.completions.create({
-        messages: [{ "role": "system", "content": "You are an assistant that creates text prompts for DALLE-3 to generate image mnemonics to aid studying." },
+        messages: [{ "role": "system", "content": "You are an assistant that creates text prompts for DALLE-3 to generate image mnemonics to aid studying. Try to use puns or any other methods." },
         { "role": "user", "content": `Buzz aldrin was one of first astronauts on the moon` },
         { "role": "system", "content": `A bumblebee in an astronaut costume on the moon with a nametag that says Buzz Aldrin` },
         { "role": "user", "content": text }],
         model: "gpt-4-1106-preview",
     });
     const result = completion.choices[0].message.content
+    console.log(result)
 
     return await generateImageFromPrompt(result)
 }
