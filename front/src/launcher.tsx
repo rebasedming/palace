@@ -160,18 +160,18 @@ const Launcher = ({ onSubmit }: LauncherProps) => {
     };
 
     try {
-      // setLoading(true)
-      // const response = await fetch(url, requestOptions);
+      setLoading(true)
+      const response = await fetch(url, requestOptions);
 
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! status: ${response.status}`);
-      // }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      // const data = await response.text();
+      const data = await response.text();
 
-      // console.log(data);
+      console.log(data);
 
-      // setLoading(false)
+      setLoading(false)
       onSubmit();
     } catch (error) {
       console.error('Error during fetch:', error.message);
