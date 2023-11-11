@@ -20,7 +20,21 @@ server.on('request', async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
     const parameter = pathname.slice(1)
-    if (parameter && parameter != "favicon.ico") {
+    if (parameter === 'data') {
+        // Serve the data.json file
+        fs.readFile('data.json', 'utf8', (err, data) => {
+            if (err) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'text/plain');
+                res.end(`Error reading file: ${err.message}`);
+            } else {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(data);
+            }
+        });
+    }
+    else if (parameter && parameter != "favicon.ico") {
         try {
             const bodyText = await summarizeFromText(await getArticleText(parameter));
             const paragraphs = bodyText.split("\n");
@@ -45,9 +59,9 @@ server.on('request', async (req, res) => {
             res.end(`Error: ${error.message}`);
         }
     } else {
-        res.statusCode = 200;
+        res.statusCode = 404;
         res.setHeader('Content-Type', 'text/plain');
-        res.end('hello');
+        res.end('Not Found\n');
     }
 });
 
