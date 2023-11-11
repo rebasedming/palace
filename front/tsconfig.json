@@ -24,7 +24,8 @@
     "typeRoots": ["@types/"],
     "baseUrl": "./src",
     "paths": {
-      "@assets/*": ["assets/*"]
+      "@assets/*": ["assets/*"],
+      "@mock/*": ["mock/*"],
     }
   },
   "include": ["src"],

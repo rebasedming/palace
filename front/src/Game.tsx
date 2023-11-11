@@ -5,6 +5,8 @@ import className from "classnames";
 import fallarbor from "../assets/maps/fallarbor.png";
 import React from "react";
 
+import mockData from "@mock/mnemonics.json";
+
 const DEBUG = false;
 
 const SPEED = 2;
@@ -181,22 +183,6 @@ const Stage = ({
     let map = Array.from({ length: world.height }, () =>
       Array(world.width).fill(0)
     );
-
-    // map = setCollisionRegion(map, 0, 0, 80, 20);
-
-    // map = setCollisionRegion(map, 0, 0, 15, 30);
-
-    // map = setCollisionRegion(map, 56, 50, 17, 14);
-
-    // map = setCollisionRegion(map, 52, 20, 16, 12);
-    // map = setCollisionRegion(map, 40, 44, 4, 4);
-    // map = setCollisionRegion(map, 20, 56, 16, 16);
-    // map = setCollisionRegion(map, 24, 20, 20, 12);
-    // map = setCollisionRegion(map, 12, 28, 4, 4);
-
-    // map = setCollisionRegion(map, 5, 57, 10, 10);
-    // map = setCollisionRegion(map, 24, 32, 4, 4);
-    // map = setCollisionRegion(map, 68, 20, 12, 4);
 
     map = setCollisionRegion(
       map,
