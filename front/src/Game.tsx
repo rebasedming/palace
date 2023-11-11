@@ -3,7 +3,6 @@ import { useState, useEffect, useRef, useMemo, memo } from "react";
 import * as PIXI from "pixi.js";
 import className from "classnames";
 import fallarbor from "../assets/maps/fallarbor.png";
-import React from "react";
 
 import mockData from "@mock/mnemonics.json";
 
@@ -261,21 +260,7 @@ const Stage = ({
       {!DEBUG && (
         <>
           <Grid map={map} />
-          <PixiStage
-            width={world.width * TILESIZE}
-            height={world.height * TILESIZE}
-            options={{ backgroundAlpha: 0 }}
-            className="absolute"
-          >
-            <Container x={START[0]} y={START[1]}>
-              <Sprite
-                image="https://pixijs.io/pixi-react/img/bunny.png"
-                x={spritePosition.x * TILESIZE}
-                y={spritePosition.y * TILESIZE}
-                anchor={new PIXI.Point(0.5, 0.5)}
-              />
-            </Container>
-          </PixiStage>
+          <PixStage spritePosition={spritePosition} world={world} />
         </>
       )}
     </div>

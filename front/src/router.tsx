@@ -2,7 +2,6 @@ import { useState } from "react";
 
 import { Stage } from "./Game";
 import Launcher from "./launcher";
-import React from "react";
 
 enum Page {
   Launcher = 0,
