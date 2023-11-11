@@ -150,7 +150,7 @@ export const useMovement = ({
 
     if (map[oldTileY][oldTileX] === PRIZE_TILE) {
       console.log("bruh");
-      setPlayerPrizePos({ x, y });
+      setPlayerPrizePos({ x: oldTileX, y: oldTileY });
     } else {
       console.log("yoink");
       setPlayerPrizePos(null);
